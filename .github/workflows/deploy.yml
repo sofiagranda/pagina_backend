@@ -19,7 +19,7 @@ jobs:
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_KEY }}
         source: "."
-        target: "/paredes_erick/pagina_backend"
+        target: "/root/paredes_erick/pagina_backend"
 
     - name: Run deploy commands on VPS
       uses: appleboy/ssh-action@v1.0.3
@@ -28,7 +28,7 @@ jobs:
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_KEY }}
         script: |
-          cd /root/pagina_backend
+          cd /root/paredes_erick/pagina_backend
           echo "$${{ secrets.ENV_FILE }}" > .env
           npm install
           npm run build
