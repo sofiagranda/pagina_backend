@@ -1,5 +1,5 @@
 // En partidos.controller.ts
-import { Controller, Post, Put, Body, Param, ParseIntPipe, Get } from '@nestjs/common';
+import { Controller, Post, Put, Body, Param, ParseIntPipe, Get, Delete } from '@nestjs/common';
 import { PartidosService, Partido } from './partidos.service'; 
 import { CreatePartidoDto } from './dto/create-partidos.dto';
 import { UpdatePartidoDto } from './dto/update-partidos.dto';
@@ -24,5 +24,10 @@ export class PartidosController {
   @Get()
   findAll(): Partido[] { // 👈 tipo de retorno
     return this.partidosService.findAll();
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: number) { 
+    return this.partidosService.remove(+id);
   }
 }

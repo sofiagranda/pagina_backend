@@ -7,10 +7,13 @@ import { EquiposModule } from './equipos/equipos.module';
 import { JugadoresModule } from './jugadores/jugadores.module';
 import { PartidosModule } from './partidos/partidos.module';
 import { EstadisticasModule } from './estadisticas/estadisticas.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { CursoModule } from './cursos/cursos.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRoot(process.env.MONGO_URI || ''),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
@@ -26,6 +29,7 @@ import { EstadisticasModule } from './estadisticas/estadisticas.module';
     JugadoresModule,
     PartidosModule,
     EstadisticasModule,
+    CursoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

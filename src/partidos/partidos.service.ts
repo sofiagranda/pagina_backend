@@ -16,6 +16,7 @@ export interface Partido {
 export class PartidosService {
   private partidos: Partido[] = [];
   private idCounter = 1;
+  prisma: any;
 
   create(createPartidoDto: CreatePartidoDto): Partido {
     const nuevoPartido: Partido = {
@@ -50,4 +51,12 @@ export class PartidosService {
   findAll(): Partido[] {
     return this.partidos;
   }
+  async remove(id: number) {
+  const partido = await this.prisma.partido.findUnique({ where: { id } });
+  if (!partido) {
+    throw new NotFoundException(`Partido con ID ${id} no encontrado`);
+  }
+
+  return await this.prisma.partido.delete({ where: { id } });
+}
 }
