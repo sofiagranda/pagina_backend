@@ -33,7 +33,7 @@ jobs:
           echo "Matar proceso en el puerto 3014..."
           sudo lsof -t -i:3014 | xargs sudo kill -9
           
-          echo -e "$${{ secrets.ENV_FILE }}" > .env
+          echo -e "${{ secrets.ENV_FILE }}" > .env
           npm install
           npm run build
           # Reiniciar PM2 con el nuevo código
