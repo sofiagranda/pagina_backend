@@ -9,4 +9,10 @@ export class Equipo {
   @Column()
   nombre: string;
 
+  @Column({ nullable: true })
+  fundacion: number;
+
+  @Column({ nullable: true })
+  foto: string;
+
 }

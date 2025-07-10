@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Equipo } from './equipos.entity';
@@ -10,8 +10,8 @@ import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginat
 export class EquiposService {
   constructor(
     @InjectRepository(Equipo)
-    private readonly equipoRepo: Repository<Equipo>,
-  ) {}
+    private readonly equipoRepo: Repository<Equipo>, // Asegúrate de usar `equipoRepo` consistentemente
+  ) { }
 
   async create(dto: CreateEquipoDto): Promise<Equipo | null> {
     try {
@@ -53,5 +53,14 @@ export class EquiposService {
     if (!equipo) return null;
 
     return await this.equipoRepo.remove(equipo);
+  }
+
+  // Aquí es donde estaba el error, cambié `this.equipoRepository` por `this.equipoRepo`
+  async agregarFoto(id: number, foto: string): Promise<Equipo> {
+    const equipo = await this.equipoRepo.findOne({ where: { id } });  // Usamos `this.equipoRepo`
+    if (!equipo) throw new NotFoundException('Equipo no encontrado');
+
+    equipo.foto = foto; // Guarda el nombre del archivo o la ruta de la imagen
+    return await this.equipoRepo.save(equipo); // Usamos `this.equipoRepo`
   }
 }

@@ -9,8 +9,11 @@ import { PartidosModule } from './partidos/partidos.module';
 import { EstadisticasModule } from './estadisticas/estadisticas.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CursoModule } from './cursos/cursos.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
-@Module({
+
+@Module({ 
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(process.env.MONGO_URI || ''),
@@ -24,6 +27,10 @@ import { CursoModule } from './cursos/cursos.module';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
       ssl: { rejectUnauthorized: false },
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'), // Ruta donde están tus archivos públicos (como logos)
+      serveRoot: '/public',  // Hace que las imágenes sean accesibles desde http://localhost:3000/public
     }),
     EquiposModule,
     JugadoresModule,

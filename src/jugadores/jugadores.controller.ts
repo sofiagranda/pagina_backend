@@ -32,7 +32,7 @@ import {
       if (isActive !== undefined && isActive !== 'true' && isActive !== 'false') {
         throw new BadRequestException('El valor de "isActive" debe ser "true" o "false"');
       }
-      const result = await this.jugadoresService.findAll({ page, limit }, isActive === 'true');
+      const result = await this.jugadoresService.findAll({ page, limit }, isActive === 'true' || isActive === 'false' ? isActive === 'true' : undefined);
       if (!result) throw new InternalServerErrorException('No se pudieron recuperar los jugadores');
       return new SuccessResponseDto('Jugadores recuperados correctamente', result);
     }
