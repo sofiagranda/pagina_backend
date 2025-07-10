@@ -29,7 +29,14 @@ jobs:
         key: ${{ secrets.VPS_KEY }}
         script: |
           cd /root/paredes_erick/pagina_backend
+           # Matar el proceso que está usando el puerto 3014
+          echo "Matar proceso en el puerto 3014..."
+          sudo lsof -t -i:3014 | xargs sudo kill -9
+          
           echo -e "$${{ secrets.ENV_FILE }}" > .env
           npm install
           npm run build
-          pm2 restart estadisticas-api || pm2 start dist/main.js --name estadisticas-api
+          # Reiniciar PM2 con el nuevo código
+          pm2 stop estadisticas-api || true
+          pm2 delete estadisticas-api || true
+          pm2 start dist/main.js --name estadisticas-api

@@ -27,6 +27,7 @@ import { join } from 'path';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
       ssl: true
+      // ssl: false
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'), // Ruta donde están tus archivos públicos (como logos)

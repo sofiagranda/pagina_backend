@@ -7,6 +7,9 @@ export class Jugador {
 
   @Column()
   nombre: string;
+  
+  @Column()
+  edad: number;
 
   @Column()
   posicion: string;
@@ -16,8 +19,12 @@ export class Jugador {
   
   @Column({ nullable: true })
   foto: string;
+  
+  @Column({ nullable: true })
+  pais: string;
 
   @Column({ default: true })
   isActive: boolean;
 }
+
 
