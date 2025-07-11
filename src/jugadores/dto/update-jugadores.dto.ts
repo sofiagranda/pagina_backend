@@ -9,7 +9,19 @@ export class UpdateJugadorDto {
 
   @IsOptional()
   @IsString()
+  apellido: string;
+
+  @IsOptional()
+  @IsString()
   posicion: string;
+  
+  @IsOptional()
+  @IsNumber()
+  edad: number;
+  
+  @IsOptional()
+  @IsString()
+  pais: string;
 
   @IsOptional()
   @IsNumber()

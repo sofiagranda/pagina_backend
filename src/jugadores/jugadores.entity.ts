@@ -7,8 +7,11 @@ export class Jugador {
 
   @Column()
   nombre: string;
-  
+
   @Column()
+  apellido: string;
+  
+  @Column({ nullable: true })
   edad: number;
 
   @Column()

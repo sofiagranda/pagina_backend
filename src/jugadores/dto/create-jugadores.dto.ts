@@ -6,7 +6,16 @@ export class CreateJugadorDto {
   nombre: string;
 
   @IsString()
+  apellido: string;
+
+  @IsString()
   posicion: string;
+
+  @IsNumber()
+  edad: number;
+
+  @IsString()
+  pais: string;
 
   @IsNumber()
   equipoId: number;
@@ -15,3 +24,4 @@ export class CreateJugadorDto {
   @IsString()
   foto?: string;
 }
+

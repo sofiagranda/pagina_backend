@@ -26,7 +26,7 @@ import {
     @Get()
     async findAll(
       @Query('page') page = 1,
-      @Query('limit') limit = 10,
+      @Query('limit') limit = 100,
       @Query('isActive') isActive?: string,
     ): Promise<SuccessResponseDto<Pagination<Jugador>>> {
       if (isActive !== undefined && isActive !== 'true' && isActive !== 'false') {
