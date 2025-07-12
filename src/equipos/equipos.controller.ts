@@ -25,7 +25,7 @@ export class EquiposController {
   }
 
   @Get()
-  async findAll(@Query('page') page = 1, @Query('limit') limit = 15): Promise<SuccessResponseDto<Pagination<Equipo>>> {
+  async findAll(@Query('page') page = 1, @Query('limit') limit = 30): Promise<SuccessResponseDto<Pagination<Equipo>>> {
     const result = await this.equiposService.findAll({ page, limit });
     if (!result) throw new InternalServerErrorException('Error al obtener equipos');
     return new SuccessResponseDto('Equipos obtenidos correctamente', result);
