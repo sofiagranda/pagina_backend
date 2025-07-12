@@ -26,6 +26,18 @@ export class Jugador {
   @Column({ nullable: true })
   pais: string;
 
+  @Column({ default: 0 })
+  goles: number;
+
+  @Column({ default: 0 })
+  tarjetasAmarillas: number;
+
+  @Column({ default: 0 })
+  tarjetasRojas: number;
+
+  @Column({ default: 0 })
+  partidosJugados: number;
+
   @Column({ default: true })
   isActive: boolean;
 }

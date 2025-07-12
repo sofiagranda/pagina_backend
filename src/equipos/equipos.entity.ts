@@ -1,5 +1,6 @@
 // src/equipos/equipo.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Estadistica } from 'src/estadisticas/estadisticas.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne } from 'typeorm';
 
 @Entity()
 export class Equipo {
@@ -15,4 +16,9 @@ export class Equipo {
   @Column({ nullable: true })
   foto: string;
 
+  @OneToOne(() => Estadistica, estadistica => estadistica.equipo, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  estadistica: Estadistica; // ✅ Aquí defines la propiedad
 }

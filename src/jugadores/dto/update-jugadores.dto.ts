@@ -1,5 +1,5 @@
 // src/jugadores/dto/create-jugador.dto.ts
-import { IsString, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsInt, Min } from 'class-validator';
 import { Column } from 'typeorm';
 
 export class UpdateJugadorDto {
@@ -34,4 +34,24 @@ export class UpdateJugadorDto {
   @IsOptional()
   @Column({ default: true })
   isActive: boolean;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  goles?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  tarjetasAmarillas?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  tarjetasRojas?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  partidosJugados?: number;
 }

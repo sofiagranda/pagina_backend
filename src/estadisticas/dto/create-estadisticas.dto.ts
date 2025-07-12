@@ -1,15 +1,27 @@
 // create-estadisticas.dto.ts
-import { IsInt, Min } from 'class-validator';
+import { IsNumber, IsOptional, Min } from 'class-validator';
 
 export class CreateEstadisticaDto {
-  @IsInt()
-  jugadorId: number;
+  @IsNumber()
+  equipoId: number;
 
-  @IsInt()
+  @IsNumber()
+  @IsOptional()
   @Min(0)
-  goles: number;
+  goles_favor?: number = 0;
 
-  @IsInt()
+  @IsNumber()
+  @IsOptional()
   @Min(0)
-  asistencias: number;
+  goles_contra?: number = 0;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  tarjetas_amarillas?: number = 0;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  tarjetas_rojas?: number = 0;
 }
