@@ -1,33 +1,38 @@
-// En partidos.controller.ts
-import { Controller, Post, Put, Body, Param, ParseIntPipe, Get, Delete } from '@nestjs/common';
-import { PartidosService, Partido } from './partidos.service'; 
+import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe } from '@nestjs/common';
+import { PartidosService } from './partidos.service';
 import { CreatePartidoDto } from './dto/create-partidos.dto';
 import { UpdatePartidoDto } from './dto/update-partidos.dto';
+import { Partido } from './partidos.entity';
 
 @Controller('partidos')
 export class PartidosController {
   constructor(private readonly partidosService: PartidosService) {}
 
+  @Get()
+  async findAll(): Promise<Partido[]> {
+    return this.partidosService.findAll();
+  }
+
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Partido> {
+    return this.partidosService.findOne(id);
+  }
+
   @Post()
-  create(@Body() createPartidoDto: CreatePartidoDto): Partido { // 
+  async create(@Body() createPartidoDto: CreatePartidoDto): Promise<Partido> {
     return this.partidosService.create(createPartidoDto);
   }
 
   @Put(':id')
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updatePartidoDto: UpdatePartidoDto,
-  ): Partido { // 👈 tipo de retorno
+  ): Promise<Partido> {
     return this.partidosService.update(id, updatePartidoDto);
   }
 
-  @Get()
-  findAll(): Partido[] { // 👈 tipo de retorno
-    return this.partidosService.findAll();
-  }
-
   @Delete(':id')
-  remove(@Param('id') id: number) { 
-    return this.partidosService.remove(+id);
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.partidosService.remove(id);
   }
 }

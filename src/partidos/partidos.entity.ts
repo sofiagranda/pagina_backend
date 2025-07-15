@@ -1,23 +1,32 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Equipo } from 'src/equipos/equipos.entity';
 
 @Entity()
 export class Partido {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 100 })
-  equipoLocal: string;
+  @Column()
+  equipoLocalId: number;
 
-  @Column({ type: 'varchar', length: 100 })
-  equipoVisitante: string;
+  @Column()
+  equipoVisitanteId: number;
 
-  @Column({ type: 'timestamp' })
+  @ManyToOne(() => Equipo)
+  @JoinColumn({ name: 'equipoLocalId' })
+  equipoLocal: Equipo;
+
+  @ManyToOne(() => Equipo)
+  @JoinColumn({ name: 'equipoVisitanteId' })
+  equipoVisitante: Equipo;
+
+  @Column()
   fecha: Date;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ default: 0 })
   golesLocal: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ default: 0 })
   golesVisitante: number;
 
   @Column({ type: 'varchar', length: 20, default: 'pendiente' })

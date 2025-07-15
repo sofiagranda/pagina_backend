@@ -1,12 +1,12 @@
 // create-partido.dto.ts
-import { IsString, IsDateString, IsInt, IsOptional } from 'class-validator';
+import { IsString, IsDateString, IsInt, IsOptional, IsNumber } from 'class-validator';
 
 export class CreatePartidoDto {
-  @IsString()
-  equipoLocal: string;
+  @IsNumber()
+  equipoLocalId: number;
 
-  @IsString()
-  equipoVisitante: string;
+  @IsNumber()
+  equipoVisitanteId: number;
 
   @IsDateString()
   fecha: string;
