@@ -11,6 +11,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CursoModule } from './cursos/cursos.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { TablaPosicionesModule } from './tablaPosiciones/tabla-posiciones.module';
 
 
 @Module({ 
@@ -37,6 +38,7 @@ import { join } from 'path';
     PartidosModule,
     EstadisticasModule,
     CursoModule,
+    TablaPosicionesModule
   ],
   controllers: [AppController],
   providers: [AppService],

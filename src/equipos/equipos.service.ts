@@ -6,6 +6,10 @@ import { CreateEquipoDto } from './dto/create-equipos.dto';
 import { UpdateEquipoDto } from './dto/update-equipos.dto';
 import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { EstadisticasService } from '../estadisticas/estadisticas.service'; // Ajusta la ruta según tu proyecto
+import { InjectModel } from '@nestjs/mongoose';
+import { TablaPosiciones, TablaPosicionesDocument } from '../tablaPosiciones/schema/tabla-posiciones.schema';
+import { Model } from 'mongoose';
+
 
 @Injectable()
 export class EquiposService {
@@ -14,15 +18,33 @@ export class EquiposService {
     private readonly equipoRepo: Repository<Equipo>,
 
     private readonly estadisticasService: EstadisticasService,
-  ) {}
+    @InjectModel(TablaPosiciones.name)
+    private readonly tablaModel: Model<TablaPosicionesDocument>,
+  ) { }
+
 
   async create(dto: CreateEquipoDto): Promise<Equipo | null> {
     try {
       const equipo = this.equipoRepo.create(dto);
       const nuevoEquipo = await this.equipoRepo.save(equipo);
 
-      // Crear estadísticas iniciales para el equipo
+      // Crear estadísticas iniciales para el equipo (PostgreSQL)
       await this.estadisticasService.crearParaEquipo(nuevoEquipo.id);
+
+      // 👇 Crear registro en TablaPosiciones (MongoDB)
+      const nuevoRegistro = new this.tablaModel({
+        equipoId: nuevoEquipo.id,
+        puntos: 0,
+        partidosJugados: 0,
+        partidosGanados: 0,
+        partidosEmpatados: 0,
+        partidosPerdidos: 0,
+        golesFavor: 0,
+        golesContra: 0,
+        diferenciaGol: 0,
+      });
+
+      await nuevoRegistro.save();
 
       return nuevoEquipo;
     } catch (err) {
@@ -70,4 +92,32 @@ export class EquiposService {
     equipo.foto = foto;
     return await this.equipoRepo.save(equipo);
   }
+
+  async sincronizarTablaPosiciones(): Promise<{ sincronizados: number }> {
+    const equipos = await this.equipoRepo.find();
+    let sincronizados = 0;
+
+    for (const equipo of equipos) {
+      const existeRegistro = await this.tablaModel.findOne({ equipoId: equipo.id }).exec();
+
+      if (!existeRegistro) {
+        const nuevoRegistroPosiciones = new this.tablaModel({
+          equipoId: equipo.id,
+          puntos: 0,
+          partidosJugados: 0,
+          partidosGanados: 0,
+          partidosEmpatados: 0,
+          partidosPerdidos: 0,
+          golesFavor: 0,
+          golesContra: 0,
+          diferenciaGol: 0,
+        });
+        await nuevoRegistroPosiciones.save();
+        sincronizados++;
+      }
+    }
+
+    return { sincronizados };
+  }
+
 }

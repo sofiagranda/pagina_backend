@@ -38,6 +38,14 @@ export class EquiposController {
     return new SuccessResponseDto('Equipo encontrado', equipo);
   }
 
+  @Post('sincronizar')
+  async sincronizar() {
+    const resultado = await this.equiposService.sincronizarTablaPosiciones();
+    return {
+      message: `Se sincronizaron ${resultado.sincronizados} registros en tabla de posiciones.`,
+    };
+  }
+
   @Put(':id')
   async update(@Param('id') id: number, @Body() dto: UpdateEquipoDto) {
     const equipo = await this.equiposService.update(id, dto);
