@@ -29,12 +29,10 @@ export class VocaliasService {
       where: { equipo: { id: equipoLocalId } },
       relations: ['equipo'], // para que cargue la relación
     });
-    console.log('Jugadores Local:', jugadoresLocal);
     const jugadoresVisita = await this.jugadorRepo.find({
       where: { equipo: { id: equipoVisitanteId } },
       relations: ['equipo'], // para que cargue la relación
     });
-    console.log('Jugadores Local:', jugadoresVisita);
 
 
     const nominaLocal = jugadoresLocal.map(j => ({
