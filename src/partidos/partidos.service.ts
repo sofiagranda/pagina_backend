@@ -15,7 +15,7 @@ export class PartidosService {
 
     @InjectRepository(Estadistica)
     private readonly estadisticaRepository: Repository<Estadistica>,
-  ) {}
+  ) { }
 
   async create(createPartidoDto: CreatePartidoDto): Promise<Partido> {
     const {
@@ -34,7 +34,7 @@ export class PartidosService {
     const partido = this.partidoRepository.create({
       equipoLocalId,
       equipoVisitanteId,
-      fecha,
+      fecha: new Date(fecha),
       golesLocal,
       golesVisitante,
       estado,
@@ -48,6 +48,7 @@ export class PartidosService {
 
     return savedPartido;
   }
+
 
   async findAll(): Promise<Partido[]> {
     return this.partidoRepository.find();
