@@ -21,4 +21,5 @@ export class Equipo {
     onDelete: 'CASCADE',
   })
   estadistica: Estadistica; // ✅ Aquí defines la propiedad
+  jugadores: any;
 }

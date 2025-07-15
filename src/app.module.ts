@@ -8,7 +8,7 @@ import { JugadoresModule } from './jugadores/jugadores.module';
 import { PartidosModule } from './partidos/partidos.module';
 import { EstadisticasModule } from './estadisticas/estadisticas.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { CursoModule } from './cursos/cursos.module';
+import { VocaliasModule } from './vocalias/vocalias.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { TablaPosicionesModule } from './tablaPosiciones/tabla-posiciones.module';
@@ -37,7 +37,7 @@ import { TablaPosicionesModule } from './tablaPosiciones/tabla-posiciones.module
     JugadoresModule,
     PartidosModule,
     EstadisticasModule,
-    CursoModule,
+    VocaliasModule,
     TablaPosicionesModule
   ],
   controllers: [AppController],

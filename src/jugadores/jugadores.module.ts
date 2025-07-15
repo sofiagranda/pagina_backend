@@ -8,7 +8,7 @@ import { Jugador } from './jugadores.entity';
   imports: [TypeOrmModule.forFeature([Jugador])],
   controllers: [JugadoresController],
   providers: [JugadoresService],
-  exports: [JugadoresService],
+  exports: [JugadoresService, TypeOrmModule],
 })
 export class JugadoresModule {}
 

@@ -6,7 +6,7 @@ import { Partido } from './partidos.entity';
 
 @Controller('partidos')
 export class PartidosController {
-  constructor(private readonly partidosService: PartidosService) {}
+  constructor(private readonly partidosService: PartidosService) { }
 
   @Get()
   async findAll(): Promise<Partido[]> {
@@ -16,6 +16,11 @@ export class PartidosController {
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<Partido> {
     return this.partidosService.findOne(id);
+  }
+
+  @Post('sincronizar-vocalias')
+  async sincronizarVocalias() {
+    return this.partidosService.sincronizarVocalias();
   }
 
   @Post()

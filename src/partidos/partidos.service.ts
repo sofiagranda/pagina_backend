@@ -6,15 +6,23 @@ import { Partido } from './partidos.entity';
 import { Estadistica } from 'src/estadisticas/estadisticas.entity';
 import { CreatePartidoDto } from './dto/create-partidos.dto';
 import { UpdatePartidoDto } from './dto/update-partidos.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Vocalia, VocaliaDocument } from '../vocalias/schemas/vocalias.schema';
+import { VocaliasService } from 'src/vocalias/vocalias.service';
 
 @Injectable()
 export class PartidosService {
   constructor(
     @InjectRepository(Partido)
     private readonly partidoRepository: Repository<Partido>,
+    @InjectModel(Vocalia.name)
+    private readonly vocaliaModel: Model<VocaliaDocument>,
 
     @InjectRepository(Estadistica)
     private readonly estadisticaRepository: Repository<Estadistica>,
+
+    private readonly vocaliasService: VocaliasService,
   ) { }
 
   async create(createPartidoDto: CreatePartidoDto): Promise<Partido> {
@@ -42,12 +50,17 @@ export class PartidosService {
 
     const savedPartido = await this.partidoRepository.save(partido);
 
+    // Si hay goles, actualiza estadísticas
     if (golesLocal > 0 || golesVisitante > 0) {
       await this.actualizarEstadisticas(equipoLocalId, equipoVisitanteId, golesLocal, golesVisitante);
     }
 
+    // 🟨 Crear vocalía relacionada automáticamente en MongoDB
+    await this.vocaliasService.createVocaliaDesdePartido(savedPartido);
+
     return savedPartido;
   }
+
 
 
   async findAll(): Promise<Partido[]> {
@@ -164,5 +177,22 @@ export class PartidosService {
     estadVisitante.golesFavor += golesVisitante;
     estadVisitante.golesContra += golesLocal;
     await this.estadisticaRepository.save(estadVisitante);
+  }
+
+  async sincronizarVocalias(): Promise<void> {
+    const partidos = await this.partidoRepository.find();
+
+    for (const partido of partidos) {
+      const existeVocalia = await this.vocaliaModel.findOne({ partidoId: partido.id }).exec();
+
+      if (!existeVocalia) {
+        await this.vocaliasService.createVocaliaDesdePartido(partido);
+        console.log(`✔ Vocalía creada para partido ${partido.id}`);
+      } else {
+        console.log(`⏩ Vocalía ya existente para partido ${partido.id}`);
+      }
+    }
+
+    console.log('🎯 Sincronización completada.');
   }
 }
