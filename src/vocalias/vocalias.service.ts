@@ -74,4 +74,17 @@ export class VocaliasService {
   async actualizar(id: string, dto: UpdateVocaliaDto): Promise<Vocalia | null> {
     return this.vocaliaModel.findByIdAndUpdate(id, dto, { new: true });
   }
+
+  async updateVocaliaScore(partido: Partido): Promise<void> {
+    await this.vocaliaModel.updateOne(
+      { partidoId: partido.id },
+      {
+        $set: {
+          golesLocal: partido.golesLocal,
+          golesVisita: partido.golesVisitante,
+        },
+      }
+    );
+  }
+
 }

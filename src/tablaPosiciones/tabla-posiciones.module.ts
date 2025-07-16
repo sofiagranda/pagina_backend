@@ -10,5 +10,6 @@ import { TablaPosicionesController } from './tabla-posiciones.controller';
   ],
   controllers: [TablaPosicionesController],
   providers: [TablaPosicionesService],
+  exports: [TablaPosicionesService],
 })
-export class TablaPosicionesModule {}
+export class TablaPosicionesModule { }

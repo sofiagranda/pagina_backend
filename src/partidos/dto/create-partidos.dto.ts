@@ -1,5 +1,6 @@
 // create-partido.dto.ts
-import { IsString, IsDateString, IsInt, IsOptional, IsNumber } from 'class-validator';
+import { IsString, IsDateString, IsInt, IsOptional, IsNumber, IsEnum } from 'class-validator';
+import { EstadoPartido } from '../partidos.entity';
 
 export class CreatePartidoDto {
   @IsNumber()
@@ -18,8 +19,8 @@ export class CreatePartidoDto {
   @IsInt()
   @IsOptional()
   golesVisitante?: number;
-
-  @IsString()
+  
   @IsOptional()
-  estado?: string;
+  @IsEnum(EstadoPartido, { message: 'Estado debe ser pendiente o completo' })
+  estado: EstadoPartido;
 }

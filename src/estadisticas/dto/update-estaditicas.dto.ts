@@ -3,17 +3,18 @@ import { IsNumber, IsOptional, Min } from 'class-validator';
 
 export class UpdateEstadisticaDto {
   @IsNumber()
+  @IsOptional()
   equipoId: number;
+  
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  golesFavor?: number = 0;
 
   @IsNumber()
   @IsOptional()
   @Min(0)
-  goles_favor?: number = 0;
-
-  @IsNumber()
-  @IsOptional()
-  @Min(0)
-  goles_contra?: number = 0;
+  golesContra?: number = 0;
 
   @IsNumber()
   @IsOptional()

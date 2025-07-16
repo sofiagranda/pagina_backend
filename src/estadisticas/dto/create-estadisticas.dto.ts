@@ -8,12 +8,12 @@ export class CreateEstadisticaDto {
   @IsNumber()
   @IsOptional()
   @Min(0)
-  goles_favor?: number = 0;
+  golesfavor?: number = 0;
 
   @IsNumber()
   @IsOptional()
   @Min(0)
-  goles_contra?: number = 0;
+  golescontra?: number = 0;
 
   @IsNumber()
   @IsOptional()

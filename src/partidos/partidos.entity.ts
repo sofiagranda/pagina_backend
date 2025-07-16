@@ -1,6 +1,11 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Equipo } from 'src/equipos/equipos.entity';
 
+export enum EstadoPartido {
+  PENDIENTE = 'pendiente',
+  COMPLETO = 'completo',
+}
+
 @Entity()
 export class Partido {
   @PrimaryGeneratedColumn()
@@ -29,6 +34,10 @@ export class Partido {
   @Column({ default: 0 })
   golesVisitante: number;
 
-  @Column({ type: 'varchar', length: 20, default: 'pendiente' })
-  estado: string;
+  @Column({
+    type: 'enum',
+    enum: EstadoPartido,
+    default: EstadoPartido.PENDIENTE,
+  })
+  estado: EstadoPartido;
 }

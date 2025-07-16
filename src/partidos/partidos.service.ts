@@ -3,26 +3,30 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Partido } from './partidos.entity';
-import { Estadistica } from 'src/estadisticas/estadisticas.entity';
+import { EstadoPartido } from './partidos.entity'; // nuevo
 import { CreatePartidoDto } from './dto/create-partidos.dto';
 import { UpdatePartidoDto } from './dto/update-partidos.dto';
+
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Vocalia, VocaliaDocument } from '../vocalias/schemas/vocalias.schema';
+
 import { VocaliasService } from 'src/vocalias/vocalias.service';
+import { EstadisticasService } from 'src/estadisticas/estadisticas.service';
+import { TablaPosicionesService } from 'src/tablaPosiciones/tabla-posiciones.service';
 
 @Injectable()
 export class PartidosService {
   constructor(
     @InjectRepository(Partido)
     private readonly partidoRepository: Repository<Partido>,
+
     @InjectModel(Vocalia.name)
     private readonly vocaliaModel: Model<VocaliaDocument>,
 
-    @InjectRepository(Estadistica)
-    private readonly estadisticaRepository: Repository<Estadistica>,
-
     private readonly vocaliasService: VocaliasService,
+    private readonly estadisticasService: EstadisticasService,
+    private readonly tablaPosicionesService: TablaPosicionesService,
   ) { }
 
   async create(createPartidoDto: CreatePartidoDto): Promise<Partido> {
@@ -32,7 +36,7 @@ export class PartidosService {
       fecha,
       golesLocal = 0,
       golesVisitante = 0,
-      estado = 'pendiente',
+      estado = EstadoPartido.PENDIENTE,
     } = createPartidoDto;
 
     if (equipoLocalId === equipoVisitanteId) {
@@ -50,18 +54,11 @@ export class PartidosService {
 
     const savedPartido = await this.partidoRepository.save(partido);
 
-    // Si hay goles, actualiza estadísticas
-    if (golesLocal > 0 || golesVisitante > 0) {
-      await this.actualizarEstadisticas(equipoLocalId, equipoVisitanteId, golesLocal, golesVisitante);
-    }
-
-    // 🟨 Crear vocalía relacionada automáticamente en MongoDB
+    // Crear vocalía asociada
     await this.vocaliasService.createVocaliaDesdePartido(savedPartido);
 
     return savedPartido;
   }
-
-
 
   async findAll(): Promise<Partido[]> {
     return this.partidoRepository.find();
@@ -69,17 +66,12 @@ export class PartidosService {
 
   async findOne(id: number): Promise<Partido> {
     const partido = await this.partidoRepository.findOne({ where: { id } });
-    if (!partido) {
-      throw new NotFoundException(`Partido con id ${id} no encontrado`);
-    }
+    if (!partido) throw new NotFoundException(`Partido con id ${id} no encontrado`);
     return partido;
   }
 
   async update(id: number, updatePartidoDto: UpdatePartidoDto): Promise<Partido> {
-    const partido = await this.partidoRepository.findOne({ where: { id } });
-    if (!partido) {
-      throw new NotFoundException(`Partido con id ${id} no encontrado`);
-    }
+    const partido = await this.findOne(id);
 
     if (
       updatePartidoDto.equipoLocalId &&
@@ -89,94 +81,77 @@ export class PartidosService {
       throw new BadRequestException('El equipo local y visitante no pueden ser el mismo');
     }
 
-    // Guarda goles antes de actualizar para ajustar estadísticas si cambian
     const golesLocalAntes = partido.golesLocal;
     const golesVisitanteAntes = partido.golesVisitante;
+    const estadoAnterior = partido.estado;
 
-    // Actualiza partido con nuevos valores
-    Object.assign(partido, updatePartidoDto);
+    if (updatePartidoDto.golesLocal !== undefined) partido.golesLocal = updatePartidoDto.golesLocal;
+    if (updatePartidoDto.golesVisitante !== undefined) partido.golesVisitante = updatePartidoDto.golesVisitante;
+    if (updatePartidoDto.fecha) partido.fecha = new Date(updatePartidoDto.fecha);
+    if (updatePartidoDto.estado) partido.estado = updatePartidoDto.estado;
+
     if (updatePartidoDto.fecha) {
       partido.fecha = new Date(updatePartidoDto.fecha);
     }
 
     const updatedPartido = await this.partidoRepository.save(partido);
 
-    // Si cambian los goles, actualizamos las estadísticas
-    if (
-      updatePartidoDto.golesLocal !== undefined &&
-      updatePartidoDto.golesVisitante !== undefined &&
-      (golesLocalAntes !== updatePartidoDto.golesLocal ||
-        golesVisitanteAntes !== updatePartidoDto.golesVisitante)
-    ) {
-      // Primero, resta los goles antiguos
-      await this.actualizarEstadisticas(
-        partido.equipoLocalId,
-        partido.equipoVisitanteId,
-        -golesLocalAntes,
-        -golesVisitanteAntes,
-      );
-      // Luego suma los goles nuevos
-      await this.actualizarEstadisticas(
-        partido.equipoLocalId,
-        partido.equipoVisitanteId,
-        updatePartidoDto.golesLocal,
-        updatePartidoDto.golesVisitante,
-      );
+    // 🔁 Recargar partido completo con campos necesarios (por seguridad)
+    const partidoCompleto = await this.partidoRepository.findOne({
+      where: { id: updatedPartido.id },
+      select: [
+        'id',
+        'equipoLocalId',
+        'equipoVisitanteId',
+        'golesLocal',
+        'golesVisitante',
+        'estado',
+      ],
+    });
+
+    if (!partidoCompleto) {
+      throw new NotFoundException('No se pudo cargar el partido actualizado completo');
     }
+
+    console.log('▶ Ajustando goles de partido:', partidoCompleto.id);
+    console.log('➡ Local ID:', partidoCompleto.equipoLocalId, '| Visitante ID:', partidoCompleto.equipoVisitanteId);
+    console.log('➡ Goles actuales:', partidoCompleto.golesLocal, '-', partidoCompleto.golesVisitante);
+    console.log('➡ Goles anteriores:', golesLocalAntes, '-', golesVisitanteAntes);
+
+    const golesCambiaron =
+      golesLocalAntes !== partidoCompleto.golesLocal ||
+      golesVisitanteAntes !== partidoCompleto.golesVisitante;
+
+    console.log("🧪 Estado antes:", estadoAnterior);
+
+    if (golesCambiaron) {
+      await this.vocaliasService.updateVocaliaScore(partidoCompleto);
+      await this.estadisticasService.adjustGoles(partidoCompleto, {
+        golesLocal: golesLocalAntes,
+        golesVisitante: golesVisitanteAntes,
+      });
+      await this.tablaPosicionesService.adjustGoles(partidoCompleto, {
+        golesLocal: golesLocalAntes,
+        golesVisitante: golesVisitanteAntes,
+      });
+    }
+    const estadoCompletoNuevo = partidoCompleto.estado === EstadoPartido.COMPLETO;
+    console.log("🧪 Estado después:", partidoCompleto.estado);
+    const estadoCompletoAntes = estadoAnterior === EstadoPartido.COMPLETO;
+
+    if (!estadoCompletoAntes && estadoCompletoNuevo) {
+      console.log("✔ Llamando a markPlayed porque cambió de pendiente a completo");
+      await this.tablaPosicionesService.markPlayed(partidoCompleto);
+    }
+
 
     return updatedPartido;
   }
 
+
   async remove(id: number): Promise<void> {
-    const partido = await this.partidoRepository.findOne({ where: { id } });
-    if (!partido) {
-      throw new NotFoundException(`Partido con id ${id} no encontrado`);
-    }
-
-    // Restar goles del partido antes de eliminar
-    if (partido.golesLocal > 0 || partido.golesVisitante > 0) {
-      await this.actualizarEstadisticas(
-        partido.equipoLocalId,
-        partido.equipoVisitanteId,
-        -partido.golesLocal,
-        -partido.golesVisitante,
-      );
-    }
-
+    const partido = await this.findOne(id);
     await this.partidoRepository.remove(partido);
-  }
-
-  private async actualizarEstadisticas(
-    equipoLocalId: number,
-    equipoVisitanteId: number,
-    golesLocal: number,
-    golesVisitante: number,
-  ): Promise<void> {
-    // Estadística local
-    let estadLocal = await this.estadisticaRepository.findOne({ where: { equipoId: equipoLocalId } });
-    if (!estadLocal) {
-      estadLocal = this.estadisticaRepository.create({
-        equipoId: equipoLocalId,
-        golesFavor: 0,
-        golesContra: 0,
-      });
-    }
-    estadLocal.golesFavor += golesLocal;
-    estadLocal.golesContra += golesVisitante;
-    await this.estadisticaRepository.save(estadLocal);
-
-    // Estadística visitante
-    let estadVisitante = await this.estadisticaRepository.findOne({ where: { equipoId: equipoVisitanteId } });
-    if (!estadVisitante) {
-      estadVisitante = this.estadisticaRepository.create({
-        equipoId: equipoVisitanteId,
-        golesFavor: 0,
-        golesContra: 0,
-      });
-    }
-    estadVisitante.golesFavor += golesVisitante;
-    estadVisitante.golesContra += golesLocal;
-    await this.estadisticaRepository.save(estadVisitante);
   }
 
   async sincronizarVocalias(): Promise<void> {
