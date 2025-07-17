@@ -5,12 +5,13 @@ import { UpdateVocaliaDto } from './dto/update-vocalias.dto';
 
 @Controller('vocalias')
 export class VocaliasController {
-  constructor(private readonly vocaliaService: VocaliasService) {}
+  constructor(private readonly vocaliaService: VocaliasService) { }
 
   @Post()
   async crear(@Body() dto: CreateVocaliaDto) {
     return this.vocaliaService.crear(dto);
   }
+  
 
   @Get()
   async obtenerTodas() {
@@ -26,4 +27,5 @@ export class VocaliasController {
   async actualizar(@Param('id') id: string, @Body() dto: UpdateVocaliaDto) {
     return this.vocaliaService.actualizar(id, dto);
   }
+
 }
