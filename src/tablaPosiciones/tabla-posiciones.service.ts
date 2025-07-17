@@ -62,22 +62,60 @@ export class TablaPosicionesService {
   }
 
   async markPlayed(partido: Partido): Promise<void> {
-    console.log("entrada a markplayed exitosa")
-    const local = await this.tablaModel.findOne({ equipoId: partido.equipoLocalId }).exec();
-    const visit = await this.tablaModel.findOne({ equipoId: partido.equipoVisitanteId }).exec();
+    console.log("➡️ Entrando a markPlaye()");
 
-    if (local) {
-      local.partidosJugados += 1;
-      await local.save();
-      console.log(`✅ Partido jugado contado para local: ${local.equipoId}`);
+    const {
+      equipoLocalId,
+      equipoVisitanteId,
+      golesLocal,
+      golesVisitante,
+    } = partido;
 
+    const local = await this.tablaModel.findOne({ equipoId: equipoLocalId }).exec();
+    const visit = await this.tablaModel.findOne({ equipoId: equipoVisitanteId }).exec();
+
+    if (!local || !visit) {
+      console.error('❌ No se encontró la tabla de posiciones para uno de los equipos');
+      return;
     }
 
-    if (visit) {
-      visit.partidosJugados += 1;
-      await visit.save();
-      console.log(`✅ Partido jugado contado para visitante: ${visit.equipoId}`);
+    // 1. Partidos jugados
+    local.partidosJugados += 1;
+    visit.partidosJugados += 1;
+
+    // 2. Goles a favor y en contra
+    local.golesFavor += golesLocal;
+    local.golesContra += golesVisitante;
+
+    visit.golesFavor += golesVisitante;
+    visit.golesContra += golesLocal;
+
+    // 3. Diferencia de gol
+    local.diferenciaGol = local.golesFavor - local.golesContra;
+    visit.diferenciaGol = visit.golesFavor - visit.golesContra;
+
+    // 4. Ganado / Empatado / Perdido / Puntos
+    if (golesLocal > golesVisitante) {
+      local.partidosGanados += 1;
+      local.puntos += 3;
+      visit.partidosPerdidos += 1;
+    } else if (golesVisitante > golesLocal) {
+      visit.partidosGanados += 1;
+      visit.puntos += 3;
+      local.partidosPerdidos += 1;
+    } else {
+      local.partidosEmpatados += 1;
+      visit.partidosEmpatados += 1;
+      local.puntos += 1;
+      visit.puntos += 1;
     }
+
+    // 5. Guardar cambios
+    await local.save();
+    await visit.save();
+
+    console.log(`✅ Tabla de posiciones actualizada para local (${equipoLocalId}) y visitante (${equipoVisitanteId})`);
   }
+
 }
 
