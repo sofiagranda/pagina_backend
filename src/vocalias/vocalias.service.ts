@@ -16,7 +16,7 @@ export class VocaliasService {
     @InjectModel(Vocalia.name) private readonly vocaliaModel: Model<VocaliaDocument>,
     @InjectRepository(Jugador) private readonly jugadorRepo: Repository<Jugador>,
     @InjectRepository(Estadistica) private readonly estadisticaRepo: Repository<Estadistica>,
-  ) { }
+  ) {}
 
   async crear(dto: CreateVocaliaDto): Promise<Vocalia> {
     const vocalia = new this.vocaliaModel(dto);
@@ -90,6 +90,7 @@ export class VocaliasService {
     if (!vocaliaOriginal) return vocaliaActualizada;
 
     await this.procesarCambiosDeJugo(vocaliaOriginal, dto);
+    await this.procesarCambiosDeGoles(vocaliaOriginal, dto);
     await this.procesarTarjetas(dto);
 
     return vocaliaActualizada;
@@ -112,6 +113,36 @@ export class VocaliasService {
     if (dto.nominaVisitante) {
       await procesar(dto.nominaVisitante, original.nominaVisitante || []);
     }
+  }
+
+  private async procesarCambiosDeGoles(original: Vocalia, dto: UpdateVocaliaDto): Promise<void> {
+    const procesar = async (nuevos: any[], originales: any[]) => {
+      for (const nuevo of nuevos) {
+        const viejo = originales.find(v => v.jugadorId === nuevo.jugadorId);
+        const golesPrevios = viejo?.numeroGoles ?? 0;
+        const diferencia = nuevo.numeroGoles - golesPrevios;
+
+        if (diferencia !== 0) {
+          await this.actualizarGolesJugador(nuevo.jugadorId, diferencia);
+        }
+      }
+    };
+
+    if (dto.goleadoresLocal) {
+      await procesar(dto.goleadoresLocal, original.goleadoresLocal || []);
+    }
+
+    if (dto.goleadoresVisita) {
+      await procesar(dto.goleadoresVisita, original.goleadoresVisita || []);
+    }
+  }
+
+  private async actualizarGolesJugador(jugadorId: number, diferencia: number): Promise<void> {
+    const jugador = await this.jugadorRepo.findOne({ where: { id: jugadorId } });
+    if (!jugador) return;
+
+    jugador.goles = Math.max(0, jugador.goles + diferencia);
+    await this.jugadorRepo.save(jugador);
   }
 
   private async actualizarPartidosJugados(jugadorId: number, jugo: boolean): Promise<void> {
