@@ -1,7 +1,8 @@
 import {
   Controller, Get, Post, Put, Delete, Body, Param,
   Query, BadRequestException, NotFoundException,
-  InternalServerErrorException
+  InternalServerErrorException,
+  UseGuards
 } from '@nestjs/common';
 import { EstadisticasService } from './estadisticas.service';
 import { CreateEstadisticaDto } from './dto/create-estadisticas.dto';
@@ -9,17 +10,20 @@ import { UpdateEstadisticaDto } from './dto/update-estaditicas.dto';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { Estadistica } from './estadisticas.entity';
 import { SuccessResponseDto } from 'src/common/dto/response.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('estadisticas')
 export class EstadisticasController {
   constructor(private readonly estadisticasService: EstadisticasService) { }
 
+  @UseGuards(JwtAuthGuard)
   @Post('inicializar')
   async inicializar() {
     await this.estadisticasService.inicializarEstadisticasParaEquiposExistentes();
     return { message: 'Estadísticas inicializadas para equipos existentes' };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Body() dto: CreateEstadisticaDto) {
     const item = await this.estadisticasService.create(dto);
@@ -39,6 +43,7 @@ export class EstadisticasController {
     return new SuccessResponseDto('Estadística recuperada exitosamente', item);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   async update(@Param('id') id: string, @Body() dto: UpdateEstadisticaDto) {
     const item = await this.estadisticasService.update(id, dto);
@@ -46,6 +51,7 @@ export class EstadisticasController {
     return new SuccessResponseDto('Estadística actualizada exitosamente', item);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id') id: string) {
     const item = await this.estadisticasService.remove(id);

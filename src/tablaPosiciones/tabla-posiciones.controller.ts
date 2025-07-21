@@ -1,12 +1,14 @@
-import { Controller, Get, Post, Body, Param, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, UseGuards } from '@nestjs/common';
 import { TablaPosicionesService } from './tabla-posiciones.service';
 import { CreateTablaPosicionDto } from './dto/create-tabla-posicion.dto';
 import { UpdateTablaPosicionDto } from './dto/update-tabla-posiciom.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('tabla-posiciones')
 export class TablaPosicionesController {
     constructor(private readonly tablaService: TablaPosicionesService) { }
 
+    @UseGuards(JwtAuthGuard)
     @Post()
     async crear(@Body() dto: CreateTablaPosicionDto) {
         return this.tablaService.crearRegistro(dto);
@@ -17,6 +19,7 @@ export class TablaPosicionesController {
         return this.tablaService.obtenerTodos();
     }
 
+    @UseGuards(JwtAuthGuard)
     @Put(':id')
     async actualizar(
         @Param('id') id: string,

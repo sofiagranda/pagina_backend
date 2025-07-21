@@ -12,6 +12,8 @@ import { VocaliasModule } from './vocalias/vocalias.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { TablaPosicionesModule } from './tablaPosiciones/tabla-posiciones.module';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 
 
 @Module({ 
@@ -38,7 +40,9 @@ import { TablaPosicionesModule } from './tablaPosiciones/tabla-posiciones.module
     PartidosModule,
     EstadisticasModule,
     VocaliasModule,
-    TablaPosicionesModule
+    TablaPosicionesModule,
+    AuthModule,
+    UsersModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -2,7 +2,8 @@ import {
   Controller, Get, Post, Put, Delete, Param, Body, Query,
   NotFoundException, BadRequestException, InternalServerErrorException,
   UseInterceptors,
-  UploadedFile
+  UploadedFile,
+  UseGuards
 } from '@nestjs/common';
 import { EquiposService } from './equipos.service';
 import { CreateEquipoDto } from './dto/create-equipos.dto';
@@ -13,11 +14,13 @@ import { Pagination } from 'nestjs-typeorm-paginate';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('equipos')
 export class EquiposController {
   constructor(private readonly equiposService: EquiposService) { }
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Body() dto: CreateEquipoDto) {
     const equipo = await this.equiposService.create(dto);
@@ -38,6 +41,7 @@ export class EquiposController {
     return new SuccessResponseDto('Equipo encontrado', equipo);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('sincronizar')
   async sincronizar() {
     const resultado = await this.equiposService.sincronizarTablaPosiciones();
@@ -46,6 +50,7 @@ export class EquiposController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   async update(@Param('id') id: number, @Body() dto: UpdateEquipoDto) {
     const equipo = await this.equiposService.update(id, dto);
@@ -53,6 +58,7 @@ export class EquiposController {
     return new SuccessResponseDto('Equipo actualizado correctamente', equipo);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id') id: number) {
     const equipo = await this.equiposService.remove(id);
@@ -60,6 +66,7 @@ export class EquiposController {
     return new SuccessResponseDto('Equipo eliminado correctamente', equipo);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post(':id/foto')
   @Post(':id/foto')
   @UseInterceptors(
