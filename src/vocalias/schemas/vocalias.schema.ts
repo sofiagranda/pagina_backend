@@ -5,6 +5,7 @@ export type VocaliaDocument = Vocalia & Document;
 
 @Schema({ timestamps: true })
 export class Vocalia {
+  
   @Prop({ required: true })
   partidoId: number;
 

@@ -154,6 +154,15 @@ export class PartidosService {
     await this.partidoRepository.remove(partido);
   }
 
+  async eliminarPartido(partidoId: number) {
+    // Eliminar vocalía en MongoDB
+    await this.vocaliaModel.deleteOne({ partidoId });
+
+    // Eliminar partido en la DB SQL
+    // Por ejemplo:
+    await this.partidoRepository.delete(partidoId);
+  }
+
   async sincronizarVocalias(): Promise<void> {
     const partidos = await this.partidoRepository.find();
 

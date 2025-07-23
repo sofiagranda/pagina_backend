@@ -25,7 +25,7 @@ export class PartidosController {
     return this.partidosService.sincronizarVocalias();
   }
 
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Body() createPartidoDto: CreatePartidoDto): Promise<Partido> {
     return this.partidosService.create(createPartidoDto);
@@ -40,10 +40,12 @@ export class PartidosController {
     return this.partidosService.update(id, updatePartidoDto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.partidosService.remove(id);
+  async eliminar(@Param('id') id: string) {
+    const partidoId = parseInt(id, 10);
+    await this.partidosService.eliminarPartido(partidoId);
+    return { message: 'Partido y vocalía eliminados correctamente' };
   }
 }
 
