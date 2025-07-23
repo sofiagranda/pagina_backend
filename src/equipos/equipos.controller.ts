@@ -3,7 +3,8 @@ import {
   NotFoundException, BadRequestException, InternalServerErrorException,
   UseInterceptors,
   UploadedFile,
-  UseGuards
+  UseGuards,
+  ParseIntPipe
 } from '@nestjs/common';
 import { EquiposService } from './equipos.service';
 import { CreateEquipoDto } from './dto/create-equipos.dto';
@@ -60,11 +61,17 @@ export class EquiposController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async remove(@Param('id') id: number) {
-    const equipo = await this.equiposService.remove(id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    // Verifica si el equipo existe antes de eliminar
+    const equipo = await this.equiposService.findOne(id);
     if (!equipo) throw new NotFoundException('Equipo no encontrado');
-    return new SuccessResponseDto('Equipo eliminado correctamente', equipo);
+
+    // Elimina el equipo y todas sus relaciones (jugadores, partidos, etc.)
+    await this.equiposService.eliminarEquipoYRelaciones(id);
+
+    return new SuccessResponseDto('Equipo y sus relaciones fueron eliminados correctamente', null);
   }
+
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/foto')

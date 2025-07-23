@@ -9,6 +9,11 @@ import { EstadisticasService } from '../estadisticas/estadisticas.service'; // A
 import { InjectModel } from '@nestjs/mongoose';
 import { TablaPosiciones, TablaPosicionesDocument } from '../tablaPosiciones/schema/tabla-posiciones.schema';
 import { Model } from 'mongoose';
+import { Vocalia, VocaliaDocument } from 'src/vocalias/schemas/vocalias.schema';
+import { Estadistica } from 'src/estadisticas/estadisticas.entity';
+import { Jugador } from 'src/jugadores/jugadores.entity';
+import { Partido } from 'src/partidos/partidos.entity';
+
 
 
 @Injectable()
@@ -16,10 +21,17 @@ export class EquiposService {
   constructor(
     @InjectRepository(Equipo)
     private readonly equipoRepo: Repository<Equipo>,
-
+    @InjectRepository(Jugador)
+    private readonly jugadorRepo: Repository<Jugador>,
+    @InjectRepository(Estadistica)
+    private readonly estadisticaRepo: Repository<Estadistica>,
+    @InjectRepository(Partido)
+    private readonly partidoRepo: Repository<Partido>,
     private readonly estadisticasService: EstadisticasService,
     @InjectModel(TablaPosiciones.name)
     private readonly tablaModel: Model<TablaPosicionesDocument>,
+    @InjectModel(Vocalia.name)
+    private readonly vocaliaModel: Model<VocaliaDocument>,
   ) { }
 
 
@@ -92,6 +104,28 @@ export class EquiposService {
     equipo.foto = foto;
     return await this.equipoRepo.save(equipo);
   }
+
+  async eliminarEquipoYRelaciones(id: number): Promise<void> {
+    const equipo = await this.equipoRepo.findOne({ where: { id } });
+    if (!equipo) throw new NotFoundException('Equipo no encontrado');
+
+    // 🟣 1. Eliminar en MongoDB
+    await this.tablaModel.deleteMany({ equipoId: id });
+    await this.vocaliaModel.deleteMany({
+      $or: [{ equipoLocalId: id }, { equipoVisitanteId: id }],
+    });
+
+    // 🟡 2. Eliminar en PostgreSQL (con TypeORM)
+    await this.jugadorRepo.delete({ equipoId: id });
+    await this.estadisticaRepo.delete({ equipoId: id });
+    await this.partidoRepo.delete([
+      { equipoLocalId: id },
+      { equipoVisitanteId: id },
+    ]);
+
+    await this.equipoRepo.delete(id);
+  }
+
 
   async sincronizarTablaPosiciones(): Promise<{ sincronizados: number }> {
     const equipos = await this.equipoRepo.find();
